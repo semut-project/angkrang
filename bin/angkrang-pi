@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IMAGE_NAME="${PI_SANDBOX_IMAGE:-pi-sandbox}"
-CONTAINER_NAME="${PI_SANDBOX_CONTAINER:-pi-sandbox}"
+IMAGE_NAME="${ANGKRANG_PI_IMAGE:-angkrang-pi}"
+CONTAINER_NAME="${ANGKRANG_PI_CONTAINER:-angkrang-pi}"
 CONTAINER_WORKDIR="/workspace"
 
-DOCKERFILE_PATH="${PI_SANDBOX_DOCKERFILE:-$HOME/agent-images/Dockerfile.pi}"
-BUILD_CONTEXT="${PI_SANDBOX_BUILD_CONTEXT:-$HOME/agent-images}"
+DOCKERFILE_PATH="${ANGKRANG_PI_DOCKERFILE:-$HOME/agent-images/Dockerfile.pi}"
+BUILD_CONTEXT="${ANGKRANG_PI_BUILD_CONTEXT:-$HOME/agent-images}"
 
-MISE_CONFIG_HOST="${MISE_CONFIG_HOST:-$HOME/.config/mise}"
-AGENT_ENV_DOCTOR_HOST="${AGENT_ENV_DOCTOR_HOST:-$HOME/.local/bin/agent-env-doctor}"
+MISE_CONFIG_HOST="${ANGKRANG_MISE_CONFIG_HOST:-$HOME/.config/mise}"
+ANGKRANG_DOCTOR_HOST="${ANGKRANG_DOCTOR_HOST:-$HOME/.local/bin/angkrang-doctor}"
 
 RUN_MODE="pi"
 if [ "${1:-}" = "doctor" ]; then
@@ -17,11 +17,11 @@ if [ "${1:-}" = "doctor" ]; then
   shift
 fi
 
-docker volume inspect pi-sandbox-home >/dev/null 2>&1 \
-  || docker volume create pi-sandbox-home >/dev/null
+docker volume inspect angkrang-pi-state >/dev/null 2>&1 \
+  || docker volume create angkrang-pi-state >/dev/null
 
-if [ ! -f "$AGENT_ENV_DOCTOR_HOST" ]; then
-  echo "agent-env-doctor not found: $AGENT_ENV_DOCTOR_HOST" >&2
+if [ ! -f "$ANGKRANG_DOCTOR_HOST" ]; then
+  echo "angkrang-doctor not found: $ANGKRANG_DOCTOR_HOST" >&2
   exit 1
 fi
 
@@ -39,10 +39,10 @@ docker run --rm -it \
   --name "$CONTAINER_NAME" \
   --workdir "$CONTAINER_WORKDIR" \
   --volume "$PWD:$CONTAINER_WORKDIR" \
-  --volume pi-sandbox-home:/persist \
-  --volume "$AGENT_ENV_DOCTOR_HOST:/tmp/agent-env-doctor.host:ro" \
+  --volume angkrang-pi-state:/persist \
+  --volume "$ANGKRANG_DOCTOR_HOST:/tmp/angkrang-doctor.host:ro" \
   "${MISE_CONFIG_MOUNT[@]}" \
-  --env PI_SANDBOX_RUN_MODE="$RUN_MODE" \
+  --env ANGKRANG_PI_RUN_MODE="$RUN_MODE" \
   --security-opt no-new-privileges:true \
   --cap-drop ALL \
   --entrypoint bash \
@@ -79,9 +79,9 @@ docker run --rm -it \
   rm -rf /root/.local/bin
   ln -s /persist/.local/bin /root/.local/bin
 
-  if [ ! -f /root/.local/bin/agent-env-doctor ]; then
-    cp /tmp/agent-env-doctor.host /root/.local/bin/agent-env-doctor
-    chmod 755 /root/.local/bin/agent-env-doctor
+  if [ ! -f /root/.local/bin/angkrang-doctor ]; then
+    cp /tmp/angkrang-doctor.host /root/.local/bin/angkrang-doctor
+    chmod 755 /root/.local/bin/angkrang-doctor
   fi
 
   rm -rf /root/.rustup
@@ -93,24 +93,24 @@ docker run --rm -it \
   mise install
   mise reshim
 
-  case "${PI_SANDBOX_RUN_MODE:-pi}" in
+  case "${ANGKRANG_PI_RUN_MODE:-pi}" in
   doctor)
-    exec agent-env-doctor "$@"
+    exec angkrang-doctor "$@"
     ;;
 
   pi)
-    echo "Running agent-env-doctor preflight..."
-    if ! agent-env-doctor; then
-      echo "agent-env-doctor failed. Pi will not start." >&2
+    echo "Running angkrang-doctor preflight..."
+    if ! angkrang-doctor; then
+      echo "angkrang-doctor failed. Pi will not start." >&2
       exit 1
     fi
 
-    echo "agent-env-doctor OK. Starting pi..."
+    echo "angkrang-doctor OK. Starting pi..."
     exec pi "$@"
     ;;
 
   *)
-    echo "Unknown mode: ${PI_SANDBOX_RUN_MODE}" >&2
+    echo "Unknown mode: ${ANGKRANG_PI_RUN_MODE}" >&2
     exit 1
     ;;
   esac  

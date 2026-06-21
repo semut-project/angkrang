@@ -1,0 +1,11 @@
+[tools]
+go = "1.24"
+node = "24"
+pnpm = "latest"
+python = "3.13"
+rust = "stable"
+uv = "latest"
+bun = "latest"
+deno = "latest"
+terraform = "1"
+yq = "latest"

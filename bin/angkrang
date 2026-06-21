@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_PATH="$(readlink -f -- "$0" 2>/dev/null || printf '%s\n' "$0")"
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$SCRIPT_PATH")" && pwd)"
+
+usage() {
+  cat <<'EOF'
+Usage: angkrang <doctor|pi|uninstall> [args...]
+
+Commands:
+  doctor     run the environment check
+  pi         run the Pi sandbox
+  uninstall  remove angkrang from this machine
+EOF
+}
+
+cmd="${1:-}"
+case "$cmd" in
+  doctor)
+    shift
+    exec "$SCRIPT_DIR/angkrang-doctor" "$@"
+    ;;
+  pi)
+    shift
+    exec "$SCRIPT_DIR/angkrang-pi" "$@"
+    ;;
+  uninstall)
+    shift
+    exec "$SCRIPT_DIR/../install.sh" --uninstall "$@"
+    ;;
+  -h|--help|help|"")
+    usage
+    ;;
+  *)
+    echo "Unknown command: $cmd" >&2
+    usage >&2
+    exit 1
+    ;;
+esac

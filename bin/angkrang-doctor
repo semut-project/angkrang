@@ -14,7 +14,7 @@ check() {
   fi
 }
 
-echo "Agent environment report"
+echo "Angkrang environment report"
 echo "Shell: ${SHELL:-unknown}"
 echo "PWD:   $(pwd)"
 echo "PATH:  $PATH"

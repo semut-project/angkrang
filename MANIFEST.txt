@@ -1,0 +1,15 @@
+bin
+bin/angkrang
+bin/angkrang-doctor
+bin/angkrang-pi
+docker
+shared
+config
+scripts
+assets
+docs
+install.sh
+README.md
+LICENSE
+VERSION
+MANIFEST.txt
