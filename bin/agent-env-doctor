@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -u
+
+check() {
+  local name="$1"
+  local cmd="$2"
+  local version_cmd="${3:-$2 --version}"
+
+  if command -v "$cmd" >/dev/null 2>&1; then
+    printf "OK   %-18s %-12s %s\n" "$name" "$cmd" "$(command -v "$cmd")"
+    $version_cmd 2>/dev/null | head -n 1 | sed 's/^/     version: /' || true
+  else
+    printf "MISS %-18s %-12s not found in PATH\n" "$name" "$cmd"
+  fi
+}
+
+echo "Agent environment report"
+echo "Shell: ${SHELL:-unknown}"
+echo "PWD:   $(pwd)"
+echo "PATH:  $PATH"
+echo
+
+check "ripgrep"          "rg"
+check "fd"               "fd"
+check "jq"               "jq"
+check "yq"               "yq"
+check "fzf"              "fzf"
+check "bat"              "bat"
+check "tree"             "tree"
+check "shellcheck"       "shellcheck"
+check "shfmt"            "shfmt"
+check "hyperfine"        "hyperfine"
+check "htop"             "htop" "htop --version"
+check "postgres client"  "psql"
+check "redis tools"      "redis-cli"
+check "sqlite"           "sqlite3"
+
+echo
+echo "mise:"
+if command -v mise >/dev/null 2>&1; then
+  mise --version
+  mise current 2>/dev/null || true
+else
+  echo "mise not found"
+fi
+
+echo
+echo "docker:"
+if command -v docker >/dev/null 2>&1; then
+  docker version --format 'Client={{.Client.Version}} Server={{.Server.Version}}' 2>/dev/null || docker version
+  docker compose version 2>/dev/null || true
+else
+  echo "docker not found"
+fi
