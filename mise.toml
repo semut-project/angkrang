@@ -1,0 +1,46 @@
+# Task runner for angkrang.
+# Tool pinning for the Pi sandbox lives in config/mise/config.toml.
+
+[tasks.install]
+description = "Install angkrang into ~/.local/share and symlink the binaries"
+run = "./install.sh --install"
+
+[tasks.uninstall]
+description = "Remove angkrang from this machine"
+run = "./install.sh --uninstall"
+
+[tasks.check]
+description = "Validate the package manifest and required files"
+run = "./install.sh --check"
+
+[tasks.lint]
+description = "Run the package validation check"
+run = "./install.sh --check"
+
+[tasks.test]
+description = "Run the environment smoke test"
+run = "./bin/angkrang-doctor"
+
+[tasks.doctor]
+description = "Check common CLI tools and Docker availability"
+run = "./bin/angkrang-doctor"
+
+[tasks.pi]
+description = "Launch the Pi sandbox"
+run = "./bin/angkrang-pi"
+
+[tasks.build]
+description = "Create the release tarball"
+run = "make package"
+
+[tasks.package]
+description = "Create the release tarball"
+run = "make package"
+
+[tasks.clean]
+description = "Remove release artifacts"
+run = "make clean"
+
+[tasks.release]
+description = "Build the release tarball"
+run = "make release"

@@ -1,7 +1,23 @@
 # angkrang
 
 ## What
-Local AI coding assistant environment tools for this machine.
+Angkrang is CLI to help Local AI coding assistant understand the environment.
+
+Purpose:
+
+- Preparing environment
+- Help AI understand the environment
+- manage environment health `angkrang doctor`
+
+Building block:
+
+- mise
+- docker
+
+AI Agent Support:
+- codex
+- pi. Provide docker sandbox pi via command `angkrang pi`
+
 
 ## Why
 Petualangan saya di dunia AI coding assistant di mulai dengan mempersiapkan lingkungan kerja yang nyaman dan mudah di kelola. Saya sadar bahwa saya orang yang tidak konsistent. Saya membutuhkan tools untuk menjaga agar saya konsistent.
@@ -10,6 +26,13 @@ Project ini dimaksudkan agar saya bisa mejaga diri saya tetap konsisten.
 Saya memutuskan `mise` adalah yang terbaik untuk mengelola konsistensi lingkungan kerja. Akan tetapi juga saya membutuhkan tool untuk inisiasi dan memeriksa kesehatan standard tool.
 
 Kedepan jika saya ingin revisi, menambahkan feature, project ini juga membantu saya mengelola hal tersebut.
+
+### Roadmap
+- [ ] Installation including dependencies: mise, docker
+- [ ] codebase indexing dengan semantic watch daemon + skill. Apakah saya perlu AST parser? --> ya
+- [ ]
+
+
 
 ## Commands
 
@@ -121,17 +144,26 @@ Doctor mode:
 angkrang pi doctor
 ```
 
-By default, `angkrang pi` expects:
+By default, `angkrang pi` uses the packaged Dockerfile, build context, and versions file:
 
-- Dockerfile: `~/agent-images/Dockerfile.pi`
-- build context: `~/agent-images`
+- Dockerfile: `.../docker/pi/Dockerfile`
+- build context: `.../docker`
+- versions: `.../docker/pi/versions.env`
 - optional mise config: `~/.config/mise`
 
 You can override these with environment variables:
 
 - `ANGKRANG_PI_DOCKERFILE`
 - `ANGKRANG_PI_BUILD_CONTEXT`
+- `ANGKRANG_VERSIONS_FILE`
 - `ANGKRANG_MISE_CONFIG_HOST`
 - `ANGKRANG_DOCTOR_HOST`
 - `ANGKRANG_PI_IMAGE`
 - `ANGKRANG_PI_CONTAINER`
+
+Edit `docker/pi/versions.env` to upgrade pinned versions.
+
+Docker build args:
+
+- `NODE_IMAGE_TAG`
+- `NODE_IMAGE_DIGEST`

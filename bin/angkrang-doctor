@@ -1,54 +1,112 @@
 #!/usr/bin/env bash
-set -u
+set -euo pipefail
+
+issues=()
+
+add_issue() {
+  issues+=("$1")
+}
+
+section() {
+  local title="$1"
+  printf '\n%s\n' "$title"
+  printf '%*s\n' "${#title}" '' | tr ' ' '='
+}
 
 check() {
   local name="$1"
   local cmd="$2"
   local version_cmd="${3:-$2 --version}"
+  local path version
 
   if command -v "$cmd" >/dev/null 2>&1; then
-    printf "OK   %-18s %-12s %s\n" "$name" "$cmd" "$(command -v "$cmd")"
-    $version_cmd 2>/dev/null | head -n 1 | sed 's/^/     version: /' || true
+    path="$(command -v "$cmd")"
+    version="$($version_cmd 2>/dev/null | head -n 1 || true)"
+    printf '[OK]   %-18s %-12s %s\n' "$name" "$cmd" "$path"
+    if [ -n "$version" ]; then
+      printf '       version: %s\n' "$version"
+    fi
   else
-    printf "MISS %-18s %-12s not found in PATH\n" "$name" "$cmd"
+    printf '[MISS] %-18s %-12s not found in PATH\n' "$name" "$cmd"
+    add_issue "$name: not found in PATH"
+  fi
+}
+
+path_entries() {
+  if [ -z "${PATH:-}" ]; then
+    echo 0
+  else
+    awk -v RS=':' 'END { print NR }' <<<"$PATH"
+  fi
+}
+
+print_path_preview() {
+  local max_lines=5
+  local idx=0
+  awk -v RS=':' -v max_lines="$max_lines" 'NR <= max_lines { printf "  - %s\n", $0 }' <<<"$PATH"
+  idx="$(path_entries)"
+  if [ "$idx" -gt "$max_lines" ]; then
+    printf '  - ... (%s more)\n' "$((idx - max_lines))"
   fi
 }
 
 echo "Angkrang environment report"
 echo "Shell: ${SHELL:-unknown}"
 echo "PWD:   $(pwd)"
-echo "PATH:  $PATH"
-echo
+echo "PATH entries: $(path_entries)"
+print_path_preview
 
-check "ripgrep"          "rg"
-check "fd"               "fd"
-check "jq"               "jq"
-check "yq"               "yq"
-check "fzf"              "fzf"
-check "bat"              "bat"
-check "tree"             "tree"
-check "shellcheck"       "shellcheck"
-check "shfmt"            "shfmt"
-check "hyperfine"        "hyperfine"
-check "htop"             "htop" "htop --version"
-check "postgres client"  "psql"
-check "redis tools"      "redis-cli"
-check "sqlite"           "sqlite3"
+section "Tools"
+check "ripgrep"         "rg"
+check "fd"              "fd"
+check "jq"              "jq"
+check "yq"              "yq"
+check "fzf"             "fzf"
+check "bat"             "bat"
+check "tree"            "tree"
+check "shellcheck"      "shellcheck"
+check "shfmt"           "shfmt"
+check "hyperfine"       "hyperfine"
+check "htop"            "htop" "htop --version"
+check "postgres client" "psql"
+check "redis tools"     "redis-cli"
+check "sqlite"          "sqlite3"
 
-echo
-echo "mise:"
+section "mise"
 if command -v mise >/dev/null 2>&1; then
-  mise --version
-  mise current 2>/dev/null || true
+  printf 'version: %s\n' "$(mise --version 2>/dev/null | head -n 1 || true)"
+  echo "installed tools:"
+  if ! mise current 2>/dev/null; then
+    add_issue "mise current failed"
+  fi
 else
   echo "mise not found"
+  add_issue "mise not found"
 fi
 
-echo
-echo "docker:"
+section "docker"
 if command -v docker >/dev/null 2>&1; then
-  docker version --format 'Client={{.Client.Version}} Server={{.Server.Version}}' 2>/dev/null || docker version
-  docker compose version 2>/dev/null || true
+  if docker version --format 'client: {{.Client.Version}} / server: {{.Server.Version}}' 2>/dev/null; then
+    :
+  else
+    echo "client/server version: unavailable"
+    add_issue "docker daemon not reachable"
+  fi
+
+  if ! docker compose version --short 2>/dev/null | sed 's/^/compose: /'; then
+    echo "compose: unavailable"
+    add_issue "docker compose not available"
+  fi
 else
   echo "docker not found"
+  add_issue "docker not found"
+fi
+
+section "Issues"
+if [ "${#issues[@]}" -eq 0 ]; then
+  echo "None"
+else
+  for issue in "${issues[@]}"; do
+    printf '- %s\n' "$issue"
+  done
 fi

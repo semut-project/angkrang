@@ -1,8 +1,27 @@
-# Project Instructions
+<!-- ANGKRANG START -->
 
-- This project is for local user installation only.
-- Use `./install.sh` to install and `./install.sh --uninstall` to remove.
-- Keep binaries in `~/.local/bin` and data in `~/.local/share/angkrang`.
-- Prefer `mise` for environment/tool management.
-- Prefer `docker compose` over legacy `docker-compose`.
-- Be concise and avoid destructive changes unless explicitly requested.
+## Principles
+
+- **Inversion of Control (IoC),**
+- **Dependency Injection (DI),**
+- **Object Oriented Programming (OOP)**
+- **S.O.L.I.D**
+- Structure dokumentasi mengikuti prinsip-prinsip [diataxis](https://diataxis.fr/) dan [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)
+
+## Project Instructions
+
+- Use mise for all project commands.
+- First run: `mise install`.
+- Before changing code, inspect `mise.toml`, package manager lockfiles, and README.
+- After code changes, run `mise run check`.
+- Do not run production migrations locally.
+- Do not print secrets or read unrelated files.
+- Prefer small diffs and explain risky changes before running destructive commands.
+
+## Folder Purpose
+
+- `.ai/`: AI-agent memory, workflow rules, coding rules, tool guidance, and cross-session context.
+- `docs/`: human-facing documentation such as architecture, API, database, deployment, guides, and ADRs.
+- `specs/`: feature requirements, implementation plans, and tasks.
+
+<!-- ANGKRANG END -->

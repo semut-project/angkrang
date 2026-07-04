@@ -1,12 +1,26 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_PATH="$(readlink -f -- "$0" 2>/dev/null || printf '%s\n' "$0")"
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$SCRIPT_PATH")" && pwd)"
+VERSIONS_FILE="${ANGKRANG_VERSIONS_FILE:-$SCRIPT_DIR/../docker/pi/versions.env}"
+
+# shellcheck disable=SC1090
+if [ -f "$VERSIONS_FILE" ]; then
+  . "$VERSIONS_FILE"
+else
+  echo "angkrang pi setup error: versions file not found" >&2
+  echo "  path: $VERSIONS_FILE" >&2
+  echo "  tip: reinstall angkrang or set ANGKRANG_VERSIONS_FILE" >&2
+  exit 1
+fi
+
 IMAGE_NAME="${ANGKRANG_PI_IMAGE:-angkrang-pi}"
 CONTAINER_NAME="${ANGKRANG_PI_CONTAINER:-angkrang-pi}"
 CONTAINER_WORKDIR="/workspace"
 
-DOCKERFILE_PATH="${ANGKRANG_PI_DOCKERFILE:-$HOME/agent-images/Dockerfile.pi}"
-BUILD_CONTEXT="${ANGKRANG_PI_BUILD_CONTEXT:-$HOME/agent-images}"
+DOCKERFILE_PATH="${ANGKRANG_PI_DOCKERFILE:-$SCRIPT_DIR/../docker/pi/Dockerfile}"
+BUILD_CONTEXT="${ANGKRANG_PI_BUILD_CONTEXT:-$SCRIPT_DIR/../docker}"
 
 MISE_CONFIG_HOST="${ANGKRANG_MISE_CONFIG_HOST:-$HOME/.config/mise}"
 ANGKRANG_DOCTOR_HOST="${ANGKRANG_DOCTOR_HOST:-$HOME/.local/bin/angkrang-doctor}"
@@ -25,7 +39,23 @@ if [ ! -f "$ANGKRANG_DOCTOR_HOST" ]; then
   exit 1
 fi
 
+if [ ! -f "$DOCKERFILE_PATH" ]; then
+  echo "angkrang pi setup error: Dockerfile not found" >&2
+  echo "  path: $DOCKERFILE_PATH" >&2
+  echo "  tip: set ANGKRANG_PI_DOCKERFILE or reinstall angkrang" >&2
+  exit 1
+fi
+
+if [ ! -d "$BUILD_CONTEXT" ]; then
+  echo "angkrang pi setup error: build context not found" >&2
+  echo "  path: $BUILD_CONTEXT" >&2
+  echo "  tip: set ANGKRANG_PI_BUILD_CONTEXT or reinstall angkrang" >&2
+  exit 1
+fi
+
 docker build \
+  --build-arg NODE_IMAGE_TAG="${NODE_IMAGE_TAG:?missing NODE_IMAGE_TAG}" \
+  --build-arg NODE_IMAGE_DIGEST="${NODE_IMAGE_DIGEST:?missing NODE_IMAGE_DIGEST}" \
   -t "$IMAGE_NAME" \
   -f "$DOCKERFILE_PATH" \
   "$BUILD_CONTEXT"

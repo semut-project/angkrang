@@ -1,0 +1,10 @@
+.DS_Store
+.cache/
+.codebase-memory/
+*.tar.gz
+*.tmp
+*.swp
+*.swo
+dist/
+tmp/
+build/

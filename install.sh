@@ -56,6 +56,20 @@ run_cmd() {
   fi
 }
 
+error_with_tip() {
+  title="$1"
+  path="${2:-}"
+  tip="${3:-}"
+
+  printf '%s\n' "$title" >&2
+  if [ -n "$path" ]; then
+    printf '  path: %s\n' "$path" >&2
+  fi
+  if [ -n "$tip" ]; then
+    printf '  tip: %s\n' "$tip" >&2
+  fi
+}
+
 default_manifest() {
   cat <<'EOF'
 bin
@@ -101,6 +115,65 @@ copy_entry() {
   run_cmd cp "$src" "$dst"
 }
 
+manifest_count() {
+  manifest_path="$1"
+  count=0
+
+  while IFS= read -r entry; do
+    case "$entry" in
+      ""|\#*) continue ;;
+    esac
+
+    count=$((count + 1))
+  done < "$manifest_path"
+
+  printf '%s\n' "$count"
+}
+
+print_manifest_items() {
+  manifest_path="$1"
+
+  while IFS= read -r entry; do
+    case "$entry" in
+      ""|\#*) continue ;;
+    esac
+
+    printf '  - %s\n' "$entry"
+  done < "$manifest_path"
+}
+
+print_install_preview() {
+  manifest_path="$1"
+  total_items="$(manifest_count "$manifest_path")"
+
+  echo "Dry run summary"
+  echo "  source:   $SCRIPT_DIR"
+  echo "  install:  $INSTALL_DIR"
+  echo "  bin dir:  $BIN_DIR"
+  echo "  items:    $total_items"
+  echo
+  echo "Would copy:"
+  print_manifest_items "$manifest_path"
+  echo
+  echo "Would create symlinks:"
+  echo "  - $BIN_DIR/angkrang -> $INSTALL_DIR/bin/angkrang"
+  echo "  - $BIN_DIR/angkrang-doctor -> $INSTALL_DIR/bin/angkrang-doctor"
+  echo "  - $BIN_DIR/angkrang-pi -> $INSTALL_DIR/bin/angkrang-pi"
+}
+
+print_uninstall_preview() {
+  echo "Dry run summary"
+  echo "  source:   $SCRIPT_DIR"
+  echo "  install:  $INSTALL_DIR"
+  echo "  bin dir:  $BIN_DIR"
+  echo
+  echo "Would remove:"
+  echo "  - $BIN_DIR/angkrang"
+  echo "  - $BIN_DIR/angkrang-doctor"
+  echo "  - $BIN_DIR/angkrang-pi"
+  echo "  - $INSTALL_DIR"
+}
+
 validate_manifest() {
   manifest_path="$1"
 
@@ -111,7 +184,10 @@ validate_manifest() {
 
     src="$SCRIPT_DIR/$entry"
     if [ ! -e "$src" ]; then
-      echo "Missing file listed in manifest: $entry" >&2
+      error_with_tip \
+        "angkrang install error: required file not found" \
+        "$src" \
+        "reinstall from a complete working tree or use the release tarball"
       exit 1
     fi
   done < "$manifest_path"
@@ -120,6 +196,11 @@ validate_manifest() {
 install_local() {
   manifest_path="$(prepare_manifest_file)"
   validate_manifest "$manifest_path"
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    print_install_preview "$manifest_path"
+    return 0
+  fi
 
   run_cmd mkdir -p "$INSTALL_DIR" "$BIN_DIR"
 
@@ -134,36 +215,43 @@ install_local() {
   done < "$manifest_path"
 
   run_cmd ln -sf "$INSTALL_DIR/bin/angkrang" "$BIN_DIR/angkrang"
+  run_cmd ln -sf "$INSTALL_DIR/bin/angkrang-doctor" "$BIN_DIR/angkrang-doctor"
+  run_cmd ln -sf "$INSTALL_DIR/bin/angkrang-pi" "$BIN_DIR/angkrang-pi"
 
-  if [ "$DRY_RUN" -eq 1 ]; then
-    echo "Dry run complete."
-  else
-    echo "Installing $APP_NAME to $INSTALL_DIR..."
-    echo "$APP_NAME installed successfully."
-    echo
-    echo "Make sure this is in your PATH:"
-    echo "  $HOME/.local/bin"
-    echo
-    echo "Add this to your shell profile if needed:"
-    echo "  export PATH=\"\$HOME/.local/bin:\$PATH\""
-    echo
-    echo "Run with:"
-    echo "  angkrang doctor"
-    echo "  angkrang pi"
-    echo "  angkrang uninstall"
-  fi
+  echo "Installing $APP_NAME to $INSTALL_DIR..."
+  echo "$APP_NAME installed successfully."
+  echo
+  echo "Make sure this is in your PATH:"
+  echo "  $HOME/.local/bin"
+  echo
+  echo "Add this to your shell profile if needed:"
+  echo "  export PATH=\"\$HOME/.local/bin:\$PATH\""
+  echo
+  echo "Run with:"
+  echo "  angkrang doctor"
+  echo "  angkrang pi"
+  echo "  angkrang uninstall"
 }
 
 uninstall_local() {
-  run_cmd rm -f "$BIN_DIR/angkrang"
+  if [ "$DRY_RUN" -eq 1 ]; then
+    print_uninstall_preview
+    return 0
+  fi
+
+  if [ ! -e "$INSTALL_DIR" ] && \
+     [ ! -L "$BIN_DIR/angkrang" ] && \
+     [ ! -L "$BIN_DIR/angkrang-doctor" ] && \
+     [ ! -L "$BIN_DIR/angkrang-pi" ]; then
+    echo "$APP_NAME is already removed."
+    return 0
+  fi
+
+  run_cmd rm -f "$BIN_DIR/angkrang" "$BIN_DIR/angkrang-doctor" "$BIN_DIR/angkrang-pi"
 
   run_cmd rm -rf "$INSTALL_DIR"
 
-  if [ "$DRY_RUN" -eq 1 ]; then
-    echo "Dry run complete."
-  else
-    echo "$APP_NAME uninstalled successfully."
-  fi
+  echo "$APP_NAME uninstalled successfully."
 }
 
 check_local() {
@@ -199,13 +287,18 @@ install_from_tarball() {
   fi
 
   if [ -z "$tarball_url" ]; then
-    echo "No local files found and no TARBALL_URL/GITHUB_REPOSITORY set." >&2
-    echo "Set one of these and try again." >&2
+    error_with_tip \
+      "angkrang install error: no local files found and no remote source configured" \
+      "" \
+      "set TARBALL_URL or GITHUB_REPOSITORY, then try again"
     exit 1
   fi
 
   if ! command -v curl >/dev/null 2>&1; then
-    echo "curl is required for remote install." >&2
+    error_with_tip \
+      "angkrang install error: curl is required for remote install" \
+      "" \
+      "install curl and try again"
     exit 1
   fi
 
@@ -217,7 +310,10 @@ install_from_tarball() {
 
   pkgdir_name="$(tar -tzf "$archive" | head -n 1 | cut -d/ -f1)"
   if [ -z "$pkgdir_name" ]; then
-    echo "Downloaded archive is empty or invalid." >&2
+    error_with_tip \
+      "angkrang install error: downloaded archive is empty or invalid" \
+      "$archive" \
+      "verify the release tarball URL and try again"
     exit 1
   fi
 
@@ -225,7 +321,10 @@ install_from_tarball() {
   pkgdir="$tmpdir/$pkgdir_name"
 
   if [ ! -x "$pkgdir/install.sh" ]; then
-    echo "Downloaded archive does not contain $pkgdir/install.sh" >&2
+    error_with_tip \
+      "angkrang install error: downloaded archive does not contain install.sh" \
+      "$pkgdir/install.sh" \
+      "download a full angkrang release tarball"
     exit 1
   fi
 
