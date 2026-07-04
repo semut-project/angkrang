@@ -106,14 +106,14 @@ Install a specific version:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/semut-project/angkrang/main/install.sh | \
-  GITHUB_REPOSITORY=semut-project/angkrang VERSION=1.0.0 bash
+  GITHUB_REPOSITORY=semut-project/angkrang VERSION=1.0.1 bash
 ```
 
 Or point directly to a tarball URL:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/semut-project/angkrang/main/install.sh | \
-  TARBALL_URL=https://github.com/semut-project/angkrang/releases/download/v1.0.0/angkrang-1.0.0.tar.gz \
+  TARBALL_URL=https://github.com/semut-project/angkrang/releases/download/v1.0.1/angkrang-1.0.1.tar.gz \
   bash
 ```
 
