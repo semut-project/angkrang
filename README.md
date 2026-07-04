@@ -94,6 +94,8 @@ Installs to:
 ## Install from GitHub
 
 The install script can download a release tarball directly from GitHub.
+For `--dry-run`, the release asset still must be complete and contain the files
+listed in `MANIFEST.txt`.
 
 Install the latest release:
 
@@ -102,18 +104,25 @@ curl -fsSL https://raw.githubusercontent.com/semut-project/angkrang/main/install
   GITHUB_REPOSITORY=semut-project/angkrang bash
 ```
 
+Dry run against a GitHub release:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/semut-project/angkrang/main/install.sh | \
+  GITHUB_REPOSITORY=semut-project/angkrang bash -s -- --dry-run
+```
+
 Install a specific version:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/semut-project/angkrang/main/install.sh | \
-  GITHUB_REPOSITORY=semut-project/angkrang VERSION=1.0.1 bash
+  GITHUB_REPOSITORY=semut-project/angkrang VERSION=1.0.2 bash
 ```
 
 Or point directly to a tarball URL:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/semut-project/angkrang/main/install.sh | \
-  TARBALL_URL=https://github.com/semut-project/angkrang/releases/download/v1.0.1/angkrang-1.0.1.tar.gz \
+  TARBALL_URL=https://github.com/semut-project/angkrang/releases/download/v1.0.2/angkrang-1.0.2.tar.gz \
   bash
 ```
 
