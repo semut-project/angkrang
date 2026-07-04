@@ -20,12 +20,13 @@ AI Agent Support:
 
 
 ## Why
-Petualangan saya di dunia AI coding assistant di mulai dengan mempersiapkan lingkungan kerja yang nyaman dan mudah di kelola. Saya sadar bahwa saya orang yang tidak konsistent. Saya membutuhkan tools untuk menjaga agar saya konsistent.
-Project ini dimaksudkan agar saya bisa mejaga diri saya tetap konsisten.
+My journey in the AI coding assistant world started with preparing a working environment that is comfortable and easy to manage. I realized that I am not a consistent person. I need tools that help me stay consistent.
 
-Saya memutuskan `mise` adalah yang terbaik untuk mengelola konsistensi lingkungan kerja. Akan tetapi juga saya membutuhkan tool untuk inisiasi dan memeriksa kesehatan standard tool.
+This project is intended to help me keep myself consistent.
 
-Kedepan jika saya ingin revisi, menambahkan feature, project ini juga membantu saya mengelola hal tersebut.
+I decided that `mise` is the best tool for managing the consistency of my working environment. However, I also need a tool for initializing and checking the health of standard tools.
+
+In the future, if I want to revise or add features, this project will also help me manage that process.
 
 ### Roadmap
 - [ ] Installation including dependencies: mise, docker
@@ -92,25 +93,27 @@ Installs to:
 
 ## Install from GitHub
 
-Publish a release tarball, then use the latest release:
+The install script can download a release tarball directly from GitHub.
+
+Install the latest release:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/install.sh | \
-  GITHUB_REPOSITORY=<owner>/<repo> bash
+curl -fsSL https://raw.githubusercontent.com/semut-project/angkrang/main/install.sh | \
+  GITHUB_REPOSITORY=semut-project/angkrang bash
 ```
 
-Or install a specific version:
+Install a specific version:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/install.sh | \
-  GITHUB_REPOSITORY=<owner>/<repo> VERSION=1.0.0 bash
+curl -fsSL https://raw.githubusercontent.com/semut-project/angkrang/main/install.sh | \
+  GITHUB_REPOSITORY=semut-project/angkrang VERSION=1.0.0 bash
 ```
 
-Or point directly to the tarball:
+Or point directly to a tarball URL:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/install.sh | \
-  TARBALL_URL=https://github.com/<owner>/<repo>/releases/download/v1.0.0/angkrang-1.0.0.tar.gz \
+curl -fsSL https://raw.githubusercontent.com/semut-project/angkrang/main/install.sh | \
+  TARBALL_URL=https://github.com/semut-project/angkrang/releases/download/v1.0.0/angkrang-1.0.0.tar.gz \
   bash
 ```
 
