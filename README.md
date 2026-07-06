@@ -9,17 +9,14 @@ Purpose:
 - Help AI understand the environment
 - manage environment health `angkrang doctor`
 
-Building block:
-
-- mise
-- docker
-
 AI Agent Support:
+
 - codex
 - pi. Provide docker sandbox pi via command `angkrang pi`
 
 
 ## Why
+
 My journey in the AI coding assistant world started with preparing a working environment that is comfortable and easy to manage. I realized that I am not a consistent person. I need tools that help me stay consistent.
 
 This project is intended to help me keep myself consistent.
@@ -28,44 +25,13 @@ I decided that `mise` is the best tool for managing the consistency of my workin
 
 In the future, if I want to revise or add features, this project will also help me manage that process.
 
-### Roadmap
-- [ ] Installation including dependencies: mise, docker
-- [ ] codebase indexing dengan semantic watch daemon + skill. Apakah saya perlu AST parser? --> ya
-- [ ]
-
-
-
 ## Commands
 
 - `angkrang doctor` — checks common CLI tools and shows environment info
 - `angkrang pi` — runs the Pi sandbox in Docker
 - `angkrang uninstall` — removes angkrang from this machine
 
-## Scaffold
-
-```text
-angkrang/
-├── bin/
-│   ├── angkrang
-│   ├── angkrang-doctor
-│   └── angkrang-pi
-├── docker/
-│   ├── common/
-│   └── pi/
-│       └── Dockerfile
-├── shared/
-├── config/
-├── scripts/
-├── assets/
-├── docs/
-├── MANIFEST.txt
-├── VERSION
-├── install.sh
-├── Makefile
-└── README.md
-```
-
-## Requirements
+## Dependencies
 
 - `mise`
 - `docker` with Compose support
@@ -179,3 +145,11 @@ Docker build args:
 
 - `NODE_IMAGE_TAG`
 - `NODE_IMAGE_DIGEST`
+
+### Roadmap
+
+- [ ] Installation including dependencies: mise, docker
+- [ ] Command `angkrang init` to init
+  - codex, pi -> AGENTS.md
+  - other -> route to AGENTS.md
+- [ ] hermes-agent-self-evolution?
